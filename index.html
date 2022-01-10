@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>FOCUS</title>
+  </head>
+
+  <body>
+    <div id="app"></div>
+    <script>
+
+
+      var request = new XMLHttpRequest();
+      request.open('GET', '/get_gifs', true);
+
+      request.onload = function() {
+        if (this.status >= 200 && this.status < 400) {
+          // Success!
+          var app = document.querySelector("#app");
+          var data = JSON.parse(this.response);
+          for (let url of data.urls) {
+            var el = document.createElement('img');
+            el.src = url;
+            app.appendChild(el);
+          }
+        } else {
+          console.log(this);
+        }
+      };
+
+      request.onerror = function(error) {
+        console.log(error);
+      };
+
+      request.send();
+
+
+    </script>
+  </body>
+</html> 

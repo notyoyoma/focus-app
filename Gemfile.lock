@@ -1,8 +1,10 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    backports (3.23.0)
     dotenv (2.7.6)
     foreman (0.87.1)
+    multi_json (1.15.0)
     mustermann (1.1.1)
       ruby2_keywords (~> 0.0.1)
     nio4r (2.5.2)
@@ -17,6 +19,13 @@ GEM
       rack (~> 2.0)
       rack-protection (= 2.0.8.1)
       tilt (~> 2.0)
+    sinatra-contrib (2.0.8.1)
+      backports (>= 2.8.2)
+      multi_json
+      mustermann (~> 1.0)
+      rack-protection (= 2.0.8.1)
+      sinatra (= 2.0.8.1)
+      tilt (~> 2.0)
     tilt (2.0.10)
 
 PLATFORMS
@@ -27,6 +36,7 @@ DEPENDENCIES
   foreman (= 0.87.1)
   puma (= 4.3.5)
   sinatra (= 2.0.8.1)
+  sinatra-contrib (~> 2.0)
 
 RUBY VERSION
    ruby 2.7.1p83

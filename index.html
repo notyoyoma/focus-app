@@ -2,38 +2,116 @@
 <html>
   <head>
     <title>FOCUS</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <style>
+      body {
+        background: #111;
+        padding: 0;
+        margin: 0;
+      }
+      #gifs {
+        height: calc(100vh - 48px);
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+      }
+      img {
+        flex-shrink: 1;
+        min-width: 0;
+        min-height: 0;
+      }
+      @media only screen and (orientation: portrait) {
+        #gifs {
+          flex-direction: column;
+        }
+      }
+      input {
+        width: 100%;
+        line-height: 48px;
+        font-size: 24px;
+        padding: 0;
+        margin: 0;
+        border: 0;
+        text-align: center;
+        border-radius: 0;
+      }
+      input:focus {
+        border: 0;
+        outline: 0;
+      }
+    </style>
   </head>
 
   <body>
-    <div id="app"></div>
+    <div id="gifs"></div>
+    <input type="text" id="input" />
     <script>
+      var gifs = {
+        el: document.querySelector("#gifs"),
+        inputEl: document.querySelector("#input"),
+        search: "",
+        urls: [],
+        fetch() {
+          var request = new XMLHttpRequest();
+          var params = this.search ? "?qs=" + this.search : "";
+          var self = this;
 
+          request.open("GET", "/get_gifs" + params, true);
 
-      var request = new XMLHttpRequest();
-      request.open('GET', '/get_gifs', true);
+          request.onload = function () {
+            if (this.status >= 200 && this.status < 400) {
+              // Success!
 
-      request.onload = function() {
-        if (this.status >= 200 && this.status < 400) {
-          // Success!
-          var app = document.querySelector("#app");
-          var data = JSON.parse(this.response);
-          for (let url of data.urls) {
-            var el = document.createElement('img');
-            el.src = url;
-            app.appendChild(el);
+              var data = JSON.parse(this.response);
+              self.urls = data.urls;
+              localStorage.setItem("urls", JSON.stringify(self.urls));
+              self.render();
+            } else {
+              console.log(this);
+            }
+          };
+
+          request.onerror = function (error) {
+            console.log(error);
+          };
+
+          request.send();
+        },
+        updateSearch(override) {
+          this.search =
+            override || localStorage.getItem("search") || "no, stop, focus";
+          localStorage.setItem("search", this.search);
+        },
+        onLoad() {},
+        render() {
+          // remove previous imgs
+          while (this.el.firstChild) {
+            this.el.removeChild(this.el.firstChild);
           }
-        } else {
-          console.log(this);
+          // add imgs from this.urls
+          for (let url of this.urls) {
+            var el = document.createElement("img");
+            el.src = url;
+            this.el.appendChild(el);
+          }
         }
       };
 
-      request.onerror = function(error) {
-        console.log(error);
+      // onload
+      gifs.updateSearch();
+      gifs.inputEl.value = gifs.search;
+      gifs.inputEl.onchange = function () {
+        gifs.updateSearch(this.value);
+        gifs.fetch();
       };
 
-      request.send();
-
-
+      var lsdUrls = localStorage.getItem("urls");
+      if (lsdUrls) {
+        gifs.urls = JSON.parse(lsdUrls);
+        gifs.render();
+      } else {
+        gifs.fetch();
+      }
     </script>
   </body>
-</html> 
+</html>

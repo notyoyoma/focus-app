@@ -1,26 +1,38 @@
 require 'sinatra'
+require "sinatra/reloader" if development?
 require 'dotenv'
 require 'json'
 require 'net/http'
 
 Dotenv.load
 
-get '/' do
-  send_file 'index.html'
-end
+def search(q)
+  opts = {
+    q: q || "stop",
+    rating: "r",
+    api_key: ENV['GIPHY_API_KEY'],
+    limit: 1,
+    lang: "en"
+  }
 
-get '/get_gifs' do
-  uri = URI "https://api.giphy.com/v1/gifs/search?" +
-    URI.encode_www_form({
-      q: "no stop",
-      rating: "r",
-      api_key: ENV['GIPHY_API_KEY']
-    })
+  uri = URI "https://api.giphy.com/v1/gifs/search?" + URI.encode_www_form(opts)
 
   response = Net::HTTP.get(uri)
   response_obj = JSON.parse(response)
 
-  original_gif_urls = response_obj['data'].collect {|x| x['images']['original']['url']}
+  response_obj['data'][0]['images']['original']['url']
+end
 
-  { urls: original_gif_urls }.to_json
+get '/' do
+  send_file 'index.html'
+end
+
+get '/favicon.ico' do
+  send_file 'favicon.ico'
+end
+
+get '/get_gifs' do
+  qs = params.fetch :qs, "no,stop,focus"
+  gif_urls = qs.split(',').map {|q| search(q)}
+  { urls: gif_urls }.to_json
 end
